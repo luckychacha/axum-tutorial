@@ -1,9 +1,10 @@
+use std::net::SocketAddr;
+
 use axum::{
     extract::Path,
-    http::StatusCode,
-    response::{Html, IntoResponse},
+    response::IntoResponse,
     routing::{get, post},
-    Extension, Json, Router, Server,
+    Json, Router,
 };
 use serde::{Deserialize, Serialize};
 
@@ -13,10 +14,18 @@ async fn main() {
         .route("/", get(|| async { "Hello World!" }))
         .route("/tickets", post(post_foo))
         .route("/foo/:id", get(get_foo));
-    let host = "127.0.0.1";
-    let port = "3000";
-    let builder = axum::Server::bind(&format!("{host}:{port}").parse().unwrap());
-    println!("Server start at: {host}:{port}");
+    // let host = "127.0.0.1";
+    // let port = "3000";
+    // let builder = axum::Server::bind(&format!("{host}:{port}").parse().unwrap());
+    // println!("Server start at: {host}:{port}");
+
+    // builder.serve(app.into_make_service()).await.unwrap();
+
+    // Better way to start server.
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    println!("->> Listening on {addr}\n");
+
+    let builder = axum::Server::bind(&addr);
 
     builder.serve(app.into_make_service()).await.unwrap();
 }
