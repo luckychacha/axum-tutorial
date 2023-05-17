@@ -45,5 +45,3 @@ async fn post_foo(Json(foo): Json<Foo>) -> impl IntoResponse {
     // test(foo.clone()).await?;
     Json(foo)
 }
-
-async fn test(foo: Foo) {}
