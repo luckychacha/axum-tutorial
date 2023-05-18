@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 async fn main() {
     let app = Router::new()
         .route("/", get(|| async { "Hello World!" }))
+        .route("/hello", get(hello_handler))
         .route("/tickets", post(post_foo))
         .route("/foo/:id", get(get_foo));
     // let host = "127.0.0.1";
@@ -53,5 +54,5 @@ struct HelloParams {
 
 async fn hello_handler(Query(hello_params): Query<HelloParams>) -> impl IntoResponse {
     let name = hello_params.name.as_deref().unwrap_or("World!");
-    Html("Hello <strong>{name}</strong>")
+    Html(format!("Hello <strong>{name}</strong>"))
 }
