@@ -1,8 +1,8 @@
 use std::net::SocketAddr;
 
 use axum::{
-    extract::Path,
-    response::IntoResponse,
+    extract::{Path, Query},
+    response::{Html, IntoResponse},
     routing::{get, post},
     Json, Router,
 };
@@ -44,4 +44,14 @@ async fn post_foo(Json(foo): Json<Foo>) -> impl IntoResponse {
     println!("{:?}", foo.uname);
     // test(foo.clone()).await?;
     Json(foo)
+}
+
+#[derive(Debug, Deserialize)]
+struct HelloParams {
+    name: Option<String>,
+}
+
+async fn hello_handler(Query(hello_params): Query<HelloParams>) -> impl IntoResponse {
+    let name = hello_params.name.as_deref().unwrap_or("World!");
+    Html("Hello <strong>{name}</strong>")
 }
