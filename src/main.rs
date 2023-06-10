@@ -53,6 +53,7 @@ struct HelloParams {
 }
 
 async fn hello_handler(Query(hello_params): Query<HelloParams>) -> impl IntoResponse {
+    println!("->> {:<12} - handler_hello {hello_params:?}", "HANDLER");
     let name = hello_params.name.as_deref().unwrap_or("World!");
     Html(format!("Hello <strong>{name}</strong>"))
 }
