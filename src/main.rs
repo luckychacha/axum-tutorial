@@ -12,9 +12,10 @@ use serde::{Deserialize, Serialize};
 async fn main() {
     let app = Router::new()
         .route("/", get(|| async { "Hello World!" }))
-        .route("/hello", get(hello_handler))
+        .merge(route_hello())
         .route("/tickets", post(post_foo))
         .route("/foo/:id", get(get_foo));
+
     // let host = "127.0.0.1";
     // let port = "3000";
     // let builder = axum::Server::bind(&format!("{host}:{port}").parse().unwrap());
@@ -31,7 +32,13 @@ async fn main() {
     builder.serve(app.into_make_service()).await.unwrap();
 }
 
-async fn get_foo(Path(id): Path<u64>) {
+fn route_hello() -> Router {
+    Router::new()
+        .route("/hello", get(hello_handler))
+        .route("/hello2/:name", get(handler_hello2))
+}
+
+async fn get_foo(Path(id): Path<u64>) -> impl IntoResponse {
     println!("{id:?}");
 }
 
@@ -52,8 +59,15 @@ struct HelloParams {
     name: Option<String>,
 }
 
+// `/hello?name=Jen`
 async fn hello_handler(Query(hello_params): Query<HelloParams>) -> impl IntoResponse {
     println!("->> {:<12} - handler_hello {hello_params:?}", "HANDLER");
     let name = hello_params.name.as_deref().unwrap_or("World!");
+    Html(format!("Hello <strong>{name}</strong>"))
+}
+
+// `/hello2/Jen`
+async fn handler_hello2(Path(name): Path<String>) -> impl IntoResponse {
+    println!("->> {:<12} - handler_hello2 {name:?}", "HANDLER");
     Html(format!("Hello <strong>{name}</strong>"))
 }
