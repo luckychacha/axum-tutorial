@@ -2,34 +2,51 @@ use std::net::SocketAddr;
 
 use axum::{
     extract::{Path, Query},
-    response::{Html, IntoResponse},
-    routing::{get, post},
+    middleware,
+    response::{Html, IntoResponse, Response},
+    routing::{get, get_service, post},
     Json, Router,
 };
-use serde::{Deserialize, Serialize};
+use tower_cookies::CookieManagerLayer;
+mod error;
+pub mod model;
+mod types;
+
+use crate::model::ModelController;
+
+// If don't use `pub use self::error::{Error, Result};` here, then we need to use `error::Error` in `src/web/routes_login.rs`
+// When we use `pub use self::error::{Error, Result};` here, then we can use `Error` in `src/web/routes_login.rs`
+pub use self::error::{Error, Result};
+
+mod web;
+
+use types::HelloParams;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
+    let mc = ModelController::new().await?;
     let app = Router::new()
-        .route("/", get(|| async { "Hello World!" }))
         .merge(route_hello())
-        .route("/tickets", post(post_foo))
-        .route("/foo/:id", get(get_foo));
+        .merge(web::routes_login::routes())
+        .nest("/api", web::routes_tickets::routes(mc.clone()))
+        .layer(middleware::map_response(main_response_mapper))
+        .layer(CookieManagerLayer::new())
+        .fallback_service(routes_static());
 
-    // let host = "127.0.0.1";
-    // let port = "3000";
-    // let builder = axum::Server::bind(&format!("{host}:{port}").parse().unwrap());
-    // println!("Server start at: {host}:{port}");
-
-    // builder.serve(app.into_make_service()).await.unwrap();
-
-    // Better way to start server.
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     println!("->> Listening on {addr}\n");
 
     let builder = axum::Server::bind(&addr);
 
     builder.serve(app.into_make_service()).await.unwrap();
+
+    Ok(())
+}
+
+async fn main_response_mapper(res: Response) -> Response {
+    println!("->> {:<12} - main_response_mapper", "RES_MAPPER");
+    println!();
+    res
 }
 
 fn route_hello() -> Router {
@@ -38,25 +55,8 @@ fn route_hello() -> Router {
         .route("/hello2/:name", get(handler_hello2))
 }
 
-async fn get_foo(Path(id): Path<u64>) -> impl IntoResponse {
-    println!("{id:?}");
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct Foo {
-    pub uid: u64,
-    pub uname: String,
-}
-async fn post_foo(Json(foo): Json<Foo>) -> impl IntoResponse {
-    println!("{foo:?}");
-    println!("{:?}", foo.uname);
-    // test(foo.clone()).await?;
-    Json(foo)
-}
-
-#[derive(Debug, Deserialize)]
-struct HelloParams {
-    name: Option<String>,
+fn routes_static() -> Router {
+    Router::new().nest_service("/", get_service(tower_http::services::ServeDir::new("./")))
 }
 
 // `/hello?name=Jen`
