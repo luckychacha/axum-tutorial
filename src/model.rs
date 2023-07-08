@@ -62,9 +62,9 @@ impl ModelController {
 
         let ticket = store
             .get(id as usize - 1)
-            .ok_or(Error::TicketNotFound)?
+            .ok_or(Error::TicketNotFound { id })?
             .clone()
-            .ok_or(Error::TicketNotFound)?;
+            .ok_or(Error::TicketNotFound { id })?;
 
         Ok(ticket)
     }

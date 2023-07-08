@@ -20,5 +20,17 @@ async fn quick_dev() -> Result<()> {
     .print()
     .await?;
 
+    hc.do_post(
+        "/api/ticket",
+        json!({
+            "title": "test"
+        }),
+    )
+    .await?
+    .print()
+    .await?;
+
+    hc.do_get("/api/ticket/1").await?.print().await?;
+
     Ok(())
 }

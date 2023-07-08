@@ -1,5 +1,5 @@
-use axum::extract::State;
-use axum::routing::post;
+use axum::extract::{Path, State};
+use axum::routing::{get, post};
 use axum::{Json, Router};
 use axum_macros::FromRef;
 
@@ -14,6 +14,7 @@ struct AppState {
 pub fn routes(mc: ModelController) -> Router {
     Router::new()
         .route("/ticket", post(create_ticket).get(list_tickets))
+        .route("/ticket/:id", get(get_ticket))
         .with_state(mc)
 }
 // region:    --- REST Handlers
@@ -34,6 +35,17 @@ async fn list_tickets(State(mc): State<ModelController>) -> Result<Json<Vec<Tick
     let tickets = mc.list_tickets().await?;
 
     Ok(Json(tickets))
+}
+
+async fn get_ticket(
+    Path(id): Path<u64>,
+    State(mc): State<ModelController>,
+) -> Result<Json<Ticket>> {
+    println!("->> {:<12} - get_ticket", "HANDLER");
+
+    let ticket = mc.get_ticket(id).await?;
+
+    Ok(Json(ticket))
 }
 
 // endregion: --- REST Handlers
