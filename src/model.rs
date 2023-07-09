@@ -69,7 +69,7 @@ impl ModelController {
         Ok(ticket)
     }
 
-    pub async fn update_ticket(&self, id: u64, ticket: TicketForCreate) -> Result<Ticket> {
+    pub async fn update_ticket(&self, id: u64, ticket_fu: TicketForCreate) -> Result<Ticket> {
         let mut store = self.tickets_store.lock().unwrap();
 
         let ticket = store
@@ -78,7 +78,7 @@ impl ModelController {
             .as_mut()
             .ok_or(Error::TicketNotFound { id })?;
 
-        ticket.title = ticket.title.clone();
+        ticket.title = ticket_fu.title.clone();
 
         Ok(ticket.clone())
     }

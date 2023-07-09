@@ -4,10 +4,12 @@ use axum::{
     extract::{Path, Query},
     middleware,
     response::{Html, IntoResponse, Response},
-    routing::{get, get_service, post},
-    Json, Router,
+    routing::{get, get_service},
+    Router,
 };
 use tower_cookies::CookieManagerLayer;
+use tower_http::trace::TraceLayer;
+
 mod error;
 pub mod model;
 mod types;
@@ -24,12 +26,14 @@ use types::HelloParams;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    tracing_subscriber::fmt::init();
     let mc = ModelController::new().await?;
     let app = Router::new()
         .merge(route_hello())
         .merge(web::routes_login::routes())
         .nest("/api", web::routes_tickets::routes(mc.clone()))
         .layer(middleware::map_response(main_response_mapper))
+        .layer(TraceLayer::new_for_http())
         .layer(CookieManagerLayer::new())
         .fallback_service(routes_static());
 

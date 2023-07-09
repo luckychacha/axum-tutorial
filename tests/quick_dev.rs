@@ -32,5 +32,18 @@ async fn quick_dev() -> Result<()> {
 
     hc.do_get("/api/ticket/1").await?.print().await?;
 
+    hc.do_put(
+        "/api/ticket/1",
+        json!({
+            "title": "test_for_update"
+        }),
+    )
+    .await?
+    .print()
+    .await?;
+    hc.do_delete("/api/ticket/1").await?.print().await?;
+
+    hc.do_get("/api/ticket/1").await?.print().await?;
+
     Ok(())
 }
