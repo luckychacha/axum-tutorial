@@ -24,9 +24,15 @@ pub struct ModelController {
 // Constructor
 impl ModelController {
     pub async fn new() -> Result<Self> {
-        Ok(Self {
+        Ok(self::ModelController::default())
+    }
+}
+
+impl Default for ModelController {
+    fn default() -> Self {
+        Self {
             tickets_store: Arc::default(),
-        })
+        }
     }
 }
 
