@@ -68,11 +68,10 @@ impl ModelController {
 
         let ticket = store
             .get(id as usize - 1)
-            .ok_or(Error::TicketNotFound { id })?
-            .clone()
             .ok_or(Error::TicketNotFound { id })?;
 
-        Ok(ticket)
+        // return Ok(Ticket) or Err
+        ticket.clone().ok_or(Error::TicketNotFound { id })
     }
 
     pub async fn update_ticket(&self, id: u64, ticket_fu: TicketForCreate) -> Result<Ticket> {
