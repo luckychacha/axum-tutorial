@@ -18,8 +18,10 @@ pub struct TicketForCreate {
 
 #[derive(Clone)]
 pub struct ModelController {
-    tickets_store: Arc<Mutex<Vec<Option<Ticket>>>>,
+    tickets_store: DefaultType,
 }
+
+pub type DefaultType = Arc<Mutex<Vec<Option<Ticket>>>>;
 
 // Constructor
 impl ModelController {
@@ -36,10 +38,18 @@ impl Default for ModelController {
     }
 }
 
-// CRUD Implementation
-impl ModelController {
-    pub async fn create_ticket(&self, ticket: TicketForCreate) -> Result<Ticket> {
-        let mut store = self.tickets_store.lock().unwrap();
+// CRUD trait for tickets_store
+trait TicketStore {
+    fn create_ticket(&mut self, ticket: TicketForCreate) -> Result<Ticket>;
+    fn list_tickets(&self) -> Result<Vec<Ticket>>;
+    fn get_ticket(&self, id: u64) -> Result<Ticket>;
+    fn delete_ticket(&mut self, id: u64) -> Result<Ticket>;
+    fn update_ticket(&mut self, id: u64, ticket: Ticket) -> Result<Ticket>;
+}
+
+impl TicketStore for DefaultType {
+    fn create_ticket(&mut self, ticket: TicketForCreate) -> Result<Ticket> {
+        let mut store = self.lock().unwrap();
 
         let id = store.len() as u64 + 1;
         let ticket = Ticket {
@@ -50,6 +60,27 @@ impl ModelController {
         store.push(Some(ticket.clone()));
 
         Ok(ticket)
+    }
+
+    fn list_tickets(&self) -> Result<Vec<Ticket>> {
+        todo!()
+    }
+
+    fn get_ticket(&self, id: u64) -> Result<Ticket> {
+        todo!()
+    }
+
+    fn delete_ticket(&mut self, id: u64) -> Result<Ticket> {
+        todo!()
+    }
+
+    fn update_ticket(&mut self, id: u64, ticket: Ticket) -> Result<Ticket> {
+        todo!()
+    }
+}
+impl ModelController {
+    pub async fn create_ticket(&mut self, ticket: TicketForCreate) -> Result<Ticket> {
+        self.tickets_store.create_ticket(ticket)
     }
 
     pub async fn list_tickets(&self) -> Result<Vec<Ticket>> {

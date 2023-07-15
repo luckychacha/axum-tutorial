@@ -22,7 +22,7 @@ pub fn routes(mc: ModelController) -> Router {
 }
 // region:    --- REST Handlers
 async fn create_ticket(
-    State(mc): State<ModelController>,
+    State(mut mc): State<ModelController>,
     Json(ticket_fc): Json<TicketForCreate>,
 ) -> Result<Json<Ticket>> {
     println!("->> {:<12} - create_ticket", "HANDLER");
